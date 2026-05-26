@@ -4,6 +4,12 @@ A deep learning project for binary classification of chest X-ray images as **NOR
 
 > **Important:** This project is intended for research and educational use. It is not a clinically validated diagnostic system and must not be used to make medical decisions.
 
+## Research Recognition
+
+The work behind this repository was submitted as the co-authored manuscript **"Transfer Learning-Driven Pneumonia Classification Using VGG16 with Fine-Tuned Feature Extraction and Explainability on Chest X-Ray Images"** (Paper ID: 48) and was **accepted for oral presentation** at the **International Conference on Next Generation Communication & Information Processing (INCIP 2026)**, scheduled for August 20-21, 2026 at the Central University of Karnataka.
+
+The team did not proceed with conference registration or presentation. This repository therefore claims **acceptance for oral presentation only** and does not claim that the paper was presented, published in the conference proceedings, or indexed in IEEE Xplore.
+
 ## Project Overview
 
 Pneumonia can appear in chest radiographs as changes such as opacities or consolidations, making chest X-ray classification a useful computer vision research task. This project adapts the VGG16 architecture to classify pediatric chest X-ray images into two classes:
@@ -12,6 +18,15 @@ Pneumonia can appear in chest radiographs as changes such as opacities or consol
 - `PNEUMONIA`
 
 The implementation is provided in [`FINAL_PNUEMONIA.ipynb`](./FINAL_PNUEMONIA.ipynb), and the accompanying manuscript is available as [`Pneumonia Detection VGG16.pdf`](./Pneumonia%20Detection%20VGG16.pdf).
+
+### Research Contribution
+
+This study investigates whether a compact adaptation of VGG16 can deliver strong pneumonia sensitivity without training a deep convolutional network from scratch. The experiment:
+
+- replaces VGG16's original classifier with a smaller regularized classification head;
+- applies staged feature extraction and selective fine-tuning within one training workflow;
+- evaluates the best validation checkpoint on a held-out test split using class-wise metrics; and
+- identifies limitations that must be addressed before any clinical interpretation.
 
 ## Features
 
@@ -25,7 +40,7 @@ The implementation is provided in [`FINAL_PNUEMONIA.ipynb`](./FINAL_PNUEMONIA.ip
 
 ## Dataset
 
-The research paper identifies the dataset as the publicly available **Chest X-Ray Images (Pneumonia)** dataset by Paul Mooney on Kaggle. The image dataset is not committed to this repository and must be downloaded separately.
+The research paper identifies the dataset as the publicly available [**Chest X-Ray Images (Pneumonia)** dataset](https://www.kaggle.com/datasets/paultimothymooney/chest-xray-pneumonia) by Paul Mooney on Kaggle. The image dataset is not committed to this repository and must be downloaded separately in accordance with its source terms.
 
 The notebook expects the following input layout:
 
@@ -78,9 +93,24 @@ Rather than loading a separate validation directory, the notebook creates a stra
 3. `EarlyStopping`, `ReduceLROnPlateau`, and `ModelCheckpoint` callbacks are used during both stages.
 4. The best saved weights, selected by validation accuracy, are loaded before final evaluation.
 
+### Experimental Pipeline
+
+```mermaid
+flowchart LR
+    A["Chest X-ray images"] --> B["Resize to 224 x 224 and normalize"]
+    B --> C["Training augmentation"]
+    B --> D["Validation and test inputs"]
+    C --> E["ImageNet-pretrained VGG16"]
+    D --> E
+    E --> F["Global Average Pooling and Batch Normalization"]
+    F --> G["Dense classifier with Dropout"]
+    G --> H["NORMAL or PNEUMONIA"]
+    H --> I["Accuracy, classification report, confusion matrix"]
+```
+
 ## Results
 
-The following values are recorded in the executed notebook output after loading `best_vgg16_model.h5`:
+The following values are recorded in the executed notebook output after loading the best validation-accuracy checkpoint, `best_vgg16_model.h5`:
 
 | Dataset | Accuracy |
 | --- | ---: |
@@ -96,7 +126,18 @@ The following values are recorded in the executed notebook output after loading 
 | PNEUMONIA | 0.87 | **0.98** | 0.92 | 390 |
 | Weighted average | 0.91 | 0.90 | 0.89 | 624 |
 
-The model has high recall for pneumonia cases in this test set, while its lower recall for normal images indicates that false positive predictions remain an important concern.
+### Interpretation
+
+The model identifies pneumonia cases with high recall (`0.98`) on this test set, which is relevant when missed cases are costly. However, recall for normal images is lower (`0.75`), meaning the model may incorrectly flag normal X-rays as pneumonia. The result supports further research, not independent diagnostic use.
+
+The executed notebook also includes:
+
+- accuracy and loss curves across both training stages; and
+- a confusion matrix for the fine-tuned model on the test split.
+
+### Reproducibility Note
+
+The notebook metadata records a Python 3.10 environment with a Google Colab T4 GPU. Its output cells preserve the reported metrics and plots. The added `requirements.txt` lists the required libraries, but exact package versions from the original run were not captured; reruns may vary slightly across hardware and library versions.
 
 ## Installation
 
@@ -109,8 +150,8 @@ The model has high recall for pneumonia cases in this test set, while its lower 
 ### Setup
 
 ```bash
-git clone https://github.com/SujayVeershette/Pneumonia-detection-using-VGG16-model-.git
-cd Pneumonia-detection-using-VGG16-model-
+git clone https://github.com/official-vanshaj-garg/Pneumonia-Detection-using-VGG16.git
+cd Pneumonia-Detection-using-VGG16
 
 python -m venv .venv
 ```
@@ -131,10 +172,10 @@ Install the notebook dependencies:
 
 ```bash
 python -m pip install --upgrade pip
-python -m pip install jupyter tensorflow numpy pandas matplotlib seaborn scikit-learn
+python -m pip install -r requirements.txt
 ```
 
-This repository does not currently include a pinned `requirements.txt`; package pinning is recommended when reproducing or extending the experiment.
+For strict experimental reproduction, create a version-pinned environment lock file after validating a successful run on your target hardware.
 
 ## Usage
 
@@ -153,9 +194,11 @@ During training, the notebook writes the best model weights to `best_vgg16_model
 ## Project Structure
 
 ```text
-Pneumonia-detection-using-VGG16-model-/
+Pneumonia-Detection-using-VGG16/
 |-- FINAL_PNUEMONIA.ipynb          # Data preparation, training, fine-tuning, and evaluation
 |-- Pneumonia Detection VGG16.pdf  # Accompanying research paper
+|-- requirements.txt               # Notebook runtime dependencies
+|-- .gitignore                     # Excludes local data, checkpoints, and environments
 `-- README.md                      # Project documentation
 ```
 
@@ -168,14 +211,15 @@ Expected local files after dataset setup and training:
 
 ## Research Paper
 
-The repository includes the manuscript **"Pneumonia detection using VGG16 model"**, which describes the motivation, VGG16 transfer-learning architecture, two-stage training procedure, evaluation, and suggested directions for explainable AI.
+The repository includes the manuscript PDF **"Pneumonia detection using VGG16 model"**, which describes the motivation, VGG16 transfer-learning architecture, two-stage training procedure, evaluation, and suggested directions for explainable AI. The INCIP 2026 acceptance communication identifies the submitted paper by the expanded title listed in the [Research Recognition](#research-recognition) section.
 
 **Authors listed in the paper:** Harsh Channapa Nagthan, Vishnu Bharadwaj Murahari, Sujay Sanjeevkumar Veershette, Ashwini Kodipalli, and Vanshaj, School of Computer Science & Engineering, RV University, Bengaluru, India.
 
 - Paper: [`Pneumonia Detection VGG16.pdf`](./Pneumonia%20Detection%20VGG16.pdf)
 - Implementation: [`FINAL_PNUEMONIA.ipynb`](./FINAL_PNUEMONIA.ipynb)
+- Conference: [INCIP 2026 official website](https://incip.in/)
 
-The notebook implements classification evaluation and visualizes learning curves and a confusion matrix. Explainability methods mentioned in the paper, such as highlighting influential lung regions, are not implemented in the current notebook.
+The notebook implements classification evaluation and visualizes learning curves and a confusion matrix. Although explainability forms part of the accepted manuscript's stated research direction, methods such as Grad-CAM or LIME are not implemented in the repository's current notebook and are listed below as future work.
 
 ## Limitations
 
@@ -185,6 +229,7 @@ The notebook implements classification evaluation and visualizes learning curves
 - The notebook does not report external validation, ROC-AUC, specificity, probability calibration, or confidence intervals.
 - No explainability method such as Grad-CAM, LIME, or relevance mapping is implemented in the notebook.
 - The model is a research prototype and has not undergone clinical validation or regulatory review.
+- The paper was accepted for oral presentation, but registration and presentation were not completed; this repository is not evidence of conference publication.
 
 ## Future Scope
 
@@ -194,4 +239,3 @@ The notebook implements classification evaluation and visualizes learning curves
 - Investigate class weighting, focal loss, or balanced sampling for improved class-wise performance.
 - Report additional clinically relevant metrics, calibration, and confidence intervals.
 - Package inference and model-version tracking for reproducible deployment experiments.
-

@@ -1,0 +1,8 @@
+# Dependencies used by FINAL_PNUEMONIA.ipynb
+jupyter
+matplotlib
+numpy
+pandas
+scikit-learn
+seaborn
+tensorflow
