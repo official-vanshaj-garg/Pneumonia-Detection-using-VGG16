@@ -1,0 +1,9 @@
+# Python and notebook runtime files
+.venv/
+__pycache__/
+.ipynb_checkpoints/
+
+# Dataset and generated training outputs
+chest_xray/
+*.h5
+*.keras
